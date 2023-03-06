@@ -11,9 +11,11 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URL;
+import java.util.ArrayList;
 
 public class FirstTest {
-
+    private static final String errMesWebElement = "Cannot find webElement by locator ";
+    private ArrayList articles;
     private AppiumDriver driver;
 
     @Before
@@ -50,6 +52,23 @@ public class FirstTest {
     }
 
     /**
+     * тест, который:
+     *
+     * 1. Ищет какое-то слово
+     * 2. Убеждается, что найдено несколько статей
+     * 3. Отменяет поиск
+     * 4. Убеждается, что результат поиска пропал
+     */
+    @Test
+    public void testSearchSomeArticles(){
+        waitForElementPresentAndClick(By.className("android.widget.TextView"));
+        waitForElementPresentAndSendKeys(By.id("org.wikipedia:id/search_src_text"), "keys");
+        waitForElementPresent(By.id("org.wikipedia:id/search_results_list"));
+        waitForElementPresentAndClick(By.id("org.wikipedia:id/search_close_btn"));
+        Assert.assertTrue(waitForElementNotPresent(By.id("org.wikipedia:id/search_results_list")));
+    }
+
+    /**
      * функция, которая проверяет наличие ожидаемого текста у элемента
      */
     private void assertElementHasText(By by, String expectedText, String errorMessage){
@@ -57,9 +76,27 @@ public class FirstTest {
         Assert.assertEquals(errorMessage, expectedText, actualText);
     }
 
-    private WebElement waitForElementPresent(By by){
+    private WebElement waitForElementPresent(By by) {
         WebDriverWait wait = new WebDriverWait(driver, 5);
-        wait.withMessage("Cannot find webElement by locator " + by);
+        wait.withMessage(errMesWebElement + by);
         return wait.until(ExpectedConditions.presenceOfElementLocated(by));
+    }
+
+    private boolean waitForElementNotPresent(By by) {
+        WebDriverWait wait = new WebDriverWait(driver, 5);
+        wait.withMessage(errMesWebElement + by);
+        return wait.until(ExpectedConditions.invisibilityOfElementLocated(by));
+    }
+
+    private WebElement waitForElementPresentAndClick(By by) {
+        WebElement e = waitForElementPresent(by);
+        e.click();
+        return e;
+    }
+
+    private WebElement waitForElementPresentAndSendKeys(By by, String keys) {
+        WebElement e = waitForElementPresent(by);
+        e.sendKeys(keys);
+        return e;
     }
 }
